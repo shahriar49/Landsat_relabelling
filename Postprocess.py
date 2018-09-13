@@ -12,8 +12,9 @@ def main():
     # Allow overwriting of existing files
     arcpy.env.overwriteOutput = True
 
-    # Folder containing relabelling output procedure (editing in Google Earth)
-    base = "D:\\Shahriar\\LandsatSeries_blocks\\PostProcess"
+    # Postprocessing base working folder
+    base = os.environ['TEMP']
+    emptyFoldersPath = inFolder[0:2]+"\\Empty_folders"
 
     ###################################################
     ## Cleaning & copying working files
@@ -22,7 +23,7 @@ def main():
     if os.path.exists('WIP'):
         os.system('rmdir WIP /S /Q')
     os.system('mkdir WIP')
-    os.system('xcopy Empty_folders WIP /T /E')
+    os.system('xcopy '+emptyFoldersPath+' WIP /T /E')
     os.chdir(base+"\\WIP")
     #
     block_id = ''
