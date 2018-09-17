@@ -7,23 +7,29 @@ from getPerClass import getPerClassFunc
 
 def main():
     # print command line arguments
-    inFolder = sys.argv[1]
-    # inFolder = "D:\\Shahriar\\LandsatSeries_blocks\\Relabelling\\01\\0113\\"
+    if len(sys.argv) == 1:
+        inFolder = raw_input('Please enter full path to sample block files folder: ')+"\\"
+    else:
+        inFolder = sys.argv[1]
+
     # Allow overwriting of existing files
     arcpy.env.overwriteOutput = True
 
     # Postprocessing base working folder
     base = os.environ['TEMP']
-    emptyFoldersPath = inFolder[0:2]+"\\Empty_folders"
+    project_dir = os.getcwd()
 
     ###################################################
     ## Cleaning & copying working files
     ###################################################
     os.chdir(base)
+    if not os.path.exists(project_dir+'\\Empty_folders'):
+        print('Empty folders not found for copying.')
+        sys.exit()
     if os.path.exists('WIP'):
         os.system('rmdir WIP /S /Q')
     os.system('mkdir WIP')
-    os.system('xcopy '+emptyFoldersPath+' WIP /T /E')
+    os.system('xcopy '+project_dir+'\\Empty_folders WIP /T /E')
     os.chdir(base+"\\WIP")
     #
     block_id = ''
@@ -92,7 +98,7 @@ def main():
             rasterPoints=fileFolder +"\\"+rasterDatabase+"\\"+"points"
             if not arcpy.Exists(rasterPoints):
                 arcpy.RasterToPoint_conversion(inputRaster, rasterPoints, "Value")
-                print "Raster to points is done"
+                print "Raster to points is done."
 
 
     # Process: Project
@@ -101,7 +107,7 @@ def main():
         rasterPointsProject=fileFolder +"\\"+rasterDatabase+"\\"+"pointsProjectWGS84"
         proCS=arcpy.SpatialReference(4326) #WGS1984
         arcpy.Project_management(rasterPoints, rasterPointsProject, proCS)
-        print "convert projects is done"
+        print "Convert projects is done."
 
     outputDatabase="output.gdb"
     if not arcpy.Exists(fileFolder+"\\"+outputDatabase):
@@ -125,10 +131,10 @@ def main():
 
         grid="KML_grid" + str(i)
         code=i
-        #print "Now is processing "+grid
+        print " - Processing "+grid
         getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPointsProject,outputDatabase,verbose=False)
 
-    print "Per class part is done"
+    print "Per class part is done."
 
     #merge perclasses to a large class
     perClasses=[]
@@ -136,12 +142,11 @@ def main():
     arcpy.env.workspace = fileFolder +"\\"+ outputDatabase
     for fc in arcpy.ListFeatureClasses():
         perClasses.append(fileFolder +"\\"+ outputDatabase+"\\"+fc)
-        #print fc
     mergeClass=fileFolder +"\\"+ outputDatabase+"\\mergeclass"
     arcpy.Merge_management(perClasses,mergeClass)
 
     arcpy.env.workspace = tempWS
-    print "Merge perclasses to large class is done"
+    print "Merge perclasses to large class is done."
     rasterCopy=fileFolder +"\\"+rasterDatabase+"\\"+"pointsProjectWGS84Copy"
     arcpy.CopyFeatures_management(rasterPointsProject, rasterCopy, "", "0", "0", "0")
     # Process: Add Field
@@ -173,7 +178,7 @@ def main():
 
     wholeClassProjCopy=fileFolder+"\\finalPoints\\"+finalResult
     arcpy.CopyFeatures_management(wholeClassProj, wholeClassProjCopy, "", "0", "0", "0")
-    print "Final points shapfile is done"
+    print "Final points shapefile is done."
     ##
     ##
 
@@ -190,7 +195,7 @@ def main():
     finalfile = arcpy.Raster(rasterFinal)
     finalfile.save(savePath)
 
-    print "-- Postprocess is complete for file " + rasterFinal + "."
+    print "* Postprocess is complete for file " + rasterFinal + "."
 
 if __name__ == "__main__":
     main()
