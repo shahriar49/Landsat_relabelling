@@ -3,7 +3,9 @@ import os
 import shutil
 import arcpy
 from distutils.dir_util import copy_tree
-from getPerClass import getPerClassFunc
+from subFunctions import *
+#import getPerClassFunc
+#from makeExcel import makeExcelFile
 
 def main():
     # print command line arguments
@@ -63,7 +65,12 @@ def main():
                 currentYear = filename[i5+11:i7]  ## Current year
             else:
                 pastYear = filename[i6+8:i7]   ## Past year
+
     # copy original image file into USGS_data folder
+    original_raster = ''
+    for file in os.listdir(inFolder+"USGS_data"):
+        if file.endswith(".img"):
+            original_raster = inFolder+"USGS_data\\"+file
     copy_tree(inFolder+"USGS_data", "USGS_ref")
 
     finalResult = block_id + "_" + pastYear + "_" + currentYear + "_lc_ESFRef_30m"
@@ -134,7 +141,7 @@ def main():
         print " - Processing "+grid
         getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPointsProject,outputDatabase,verbose=False)
 
-    print "Per class part is done."
+    #print "Per class processing is done."
 
     #merge perclasses to a large class
     perClasses=[]
@@ -146,7 +153,7 @@ def main():
     arcpy.Merge_management(perClasses,mergeClass)
 
     arcpy.env.workspace = tempWS
-    print "Merge perclasses to large class is done."
+    print "Merge single classes is done."
     rasterCopy=fileFolder +"\\"+rasterDatabase+"\\"+"pointsProjectWGS84Copy"
     arcpy.CopyFeatures_management(rasterPointsProject, rasterCopy, "", "0", "0", "0")
     # Process: Add Field
@@ -194,6 +201,10 @@ def main():
 
     finalfile = arcpy.Raster(rasterFinal)
     finalfile.save(savePath)
+
+    print "Final raster file is created."
+
+    makeExcelFile(fileFolder, inFolder, original_raster, savePath)
 
     print "* Postprocess is complete for file " + rasterFinal + "."
 
