@@ -23,8 +23,8 @@ for region in regions:
 
 run = open('run.bat', 'w')
 run.write(map_string+"\n")
-for item in work_list[0:1]:
-    run.write("C:\Python27\ArcGIS10.5\python.exe Postprocess.py "+item+"\n")
+for item in work_list:
+    run.write("C:\Python27\ArcGIS10.5\python.exe Postprocess.py "+item+" Y Y \n")
 run.write('subst '+newDrive+' /D')
 run.close()
 

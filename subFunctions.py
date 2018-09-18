@@ -164,6 +164,34 @@ def makeExcelFile(WIP, inFolder, original_raster, corrected):
     arcpy.env.workspace = WIP+"\\temp.gdb"
     #arcpy.env.overwriteOutput = True
 
+    Original_classes = {
+        0: 'None',
+        1: 'Water',
+        2: 'Developed',
+        3: 'Mech. Distrubed',
+        4: 'Mining',
+        5: 'Barren',
+        6: 'Forest',
+        7: 'Grass/Shrubland',
+        8: 'Agriculture',
+        9: 'Wetland',
+        10: 'Nonmech. Disturbed',
+        11: 'Ice/Snow'
+    }
+
+    New_classes = {
+        0:'None',
+        21:'Water',
+        22:'Imprevious',
+        23:'Grass/Shrubland',
+        24:'Forest',
+        25:'Bare',
+        26:'Cultivated',
+        27:'Wetland',
+        28:'Ice/Snow',
+        30:'Transition'
+    }
+
     # Local variables:
     #base_path = "C:\\Users\\shhey\\test\\"
     os.chdir(inFolder)
@@ -186,10 +214,12 @@ def makeExcelFile(WIP, inFolder, original_raster, corrected):
 
     table = arcpy.CreateTable_management(arcpy.env.workspace, out_table)
     arcpy.AddField_management(table, "Original_class", "LONG")
+    arcpy.AddField_management(table, "Desc1", "TEXT")
     arcpy.AddField_management(table, "New_class", "LONG")
+    arcpy.AddField_management(table, "Desc2", "TEXT")
     arcpy.AddField_management(table, "Count", "LONG")
 
-    with arcpy.da.InsertCursor(table, ['Original_class', 'New_class', 'Count']) as cursor:
+    with arcpy.da.InsertCursor(table, ['Original_class', 'Desc1', 'New_class', 'Desc2', 'Count']) as cursor:
         for c in classes:
             layer = arcpy.sa.ExtractByAttributes(original, 'Value = '+str(c))
             sel = arcpy.sa.ExtractByMask(corrected, layer)
@@ -198,6 +228,6 @@ def makeExcelFile(WIP, inFolder, original_raster, corrected):
             #print 'converted from class %d :' % c
             for row in rows:
                 #print '   new class %d, count %d' % (row[0], row[1])
-                cursor.insertRow((c, row[0], row[1]))
+                cursor.insertRow((c, Original_classes[c], row[0], New_classes[row[0]], row[1]))
 
     arcpy.TableToExcel_conversion(table, excel_table)
