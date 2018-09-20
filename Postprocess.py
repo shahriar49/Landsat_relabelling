@@ -10,7 +10,8 @@ from subFunctions import *
 def main():
     # print command line arguments
     if len(sys.argv) == 1:
-        inFolder = raw_input('Please enter full path to sample block files folder: ')+"\\"
+        print('Please enter full path to sample block files folder ')
+        inFolder = raw_input('(for example H:\\Desktop\\Relabelling\\01\\0130): ') +"\\"
         makeRasterFlag = raw_input('Do you want to create corrected map (y/n)? ')
         makeExcelFlag = raw_input('Do you want to create conversion excel file (y/n)? ')
     else:
@@ -175,7 +176,7 @@ def main():
         # Process: Select Layer By Location
         rasterCopy_ly=tempCopy+"\\rastercopy_ly"
         arcpy.MakeFeatureLayer_management(rasterCopy, rasterCopy_ly)
-        arcpy.SelectLayerByLocation_management(rasterCopy_ly, "WITHIN", mergeClass, "", "NEW_SELECTION", "NOT_INVERT")
+        arcpy.SelectLayerByLocation_management(rasterCopy_ly, "WITHIN", mergeClass, "", "NEW_SELECTION")
 
         # Process: Select Layer By Attribute
         arcpy.SelectLayerByAttribute_management(rasterCopy_ly, "SWITCH_SELECTION", "")
