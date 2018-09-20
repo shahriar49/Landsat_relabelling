@@ -83,7 +83,7 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
         #print outputmerge,removePolygon
         # Process: Select Layer By Location
         arcpy.MakeFeatureLayer_management(outputmerge, outputmerge_rm)
-        arcpy.SelectLayerByLocation_management(outputmerge_rm, "WITHIN", removePolygon, "", "NEW_SELECTION", "NOT_INVERT")
+        arcpy.SelectLayerByLocation_management(outputmerge_rm, "WITHIN", removePolygon, "", "NEW_SELECTION")
 
         # Process: Select Layer By Attribute
         arcpy.SelectLayerByAttribute_management(outputmerge_rm, "SWITCH_SELECTION", "")
@@ -99,7 +99,7 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
         # Process: Select Layer By Location
         rasterPointsForAdd=tempMerge+"\\rasterpoints"
         arcpy.MakeFeatureLayer_management(rasterPoints, rasterPointsForAdd)    
-        arcpy.SelectLayerByLocation_management(rasterPointsForAdd, "WITHIN", addPolygon, "", "NEW_SELECTION", "NOT_INVERT")
+        arcpy.SelectLayerByLocation_management(rasterPointsForAdd, "WITHIN", addPolygon, "", "NEW_SELECTION")
 
         # Process: Copy Features
         outputAdd=perClass+"\\"+tempDatabase+"\\outputAdd"
