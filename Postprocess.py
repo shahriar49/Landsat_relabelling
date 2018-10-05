@@ -57,33 +57,30 @@ def main():
                 i2 = filename.find("group")
                 i3 = filename.find("AddClass")
                 i4 = filename.find("RemoveClass")
-                i5 = filename.find("CurrentYear")
-                i6 = filename.find("PastYear")
+                # i5 = filename.find("CurrentYear")
+                # i6 = filename.find("PastYear")
                 i7 = filename.find(".kmz")
-                if i1 != -1:
-                    block_id = filename[0:11]
-                    label = filename[i1+4:i2-1]
-                    destination = "KML_grid"+label+"\\KMLs"
-                    shutil.copy(root + "\\" + filename, destination)
-                elif i3 != -1:
-                    label = filename[i3+8:i7]
-                    destination = "KML_grid"+label+"\\AddPolygon"
-                    shutil.copy(root + "\\" + filename, destination)
-                elif i4 != -1:
-                    label = filename[i4+11:i7]
-                    destination = "KML_grid"+label+"\\RemovePolygon"
-                    shutil.copy(root + "\\" + filename, destination)
-                elif i5 != -1:
-                    currentYear = filename[i5+11:i7]  ## Current year
-                else:
-                    pastYear = filename[i6+8:i7]   ## Past year
+                if i7 != -1:        # looking at .kmz files only
+                    if i1 != -1:
+                        block_id = filename[0:11]
+                        label = filename[i1+4:i2-1]
+                        destination = "KML_grid"+label+"\\KMLs"
+                        shutil.copy(root + "\\" + filename, destination)
+                    elif i3 != -1:
+                        label = filename[i3+8:i7]
+                        destination = "KML_grid"+label+"\\AddPolygon"
+                        shutil.copy(root + "\\" + filename, destination)
+                    elif i4 != -1:
+                        label = filename[i4+11:i7]
+                        destination = "KML_grid"+label+"\\RemovePolygon"
+                        shutil.copy(root + "\\" + filename, destination)
 
         # copy original image file into USGS_data folder
         copy_tree(inFolder+"USGS_data", "USGS_ref")
 
         if not os.path.exists(inFolder+"ESF_Ref"):
             os.system('mkdir '+inFolder+'ESF_Ref')
-        finalResult = block_id + "_" + pastYear + "_" + currentYear + "_lc_ESFRef_30m"
+        finalResult = block_id + "_lc_ESFRef_30m"
         savePath = inFolder+"ESF_Ref\\"+finalResult+".tif"
 
         ###################################################
