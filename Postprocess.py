@@ -80,6 +80,9 @@ def main():
 
         if not os.path.exists(inFolder+"ESF_Ref"):
             os.system('mkdir '+inFolder+'ESF_Ref')
+        else:
+            os.system('del '+inFolder+'ESF_Ref /Q')
+
         finalResult = block_id + "_lc_ESFRef_30m"
         savePath = inFolder+"ESF_Ref\\"+finalResult+".tif"
 
@@ -158,9 +161,9 @@ def main():
             perClasses.append(fileFolder +"\\"+ outputDatabase+"\\"+fc)
         mergeClass=fileFolder +"\\"+ outputDatabase+"\\mergeclass"
         arcpy.Merge_management(perClasses,mergeClass)
-        dissolveClass=fileFolder +"\\"+ outputDatabase+"\\dissolveclass"
-        arcpy.Dissolve_management(mergeClass, dissolveClass, "POINT_X;POINT_Y", [["cls_lbl", "SUM"]], "SINGLE_PART")
-        arcpy.AlterField_management(dissolveClass, "SUM_cls_lbl","cls_lbl")
+        #dissolveClass=fileFolder +"\\"+ outputDatabase+"\\dissolveclass"
+        #arcpy.Dissolve_management(mergeClass, dissolveClass, "POINT_X;POINT_Y", [["cls_lbl", "SUM"]], "SINGLE_PART")
+        #arcpy.AlterField_management(dissolveClass, "SUM_cls_lbl","cls_lbl")
 
         arcpy.env.workspace = tempWS
         print "Merge single classes is done."
@@ -186,7 +189,7 @@ def main():
         arcpy.CopyFeatures_management(rasterCopy_ly, restPoints, "", "0", "0", "0")
 
         wholeClass=fileFolder +"\\"+ outputDatabase+"\\wholeclasses"
-        arcpy.Merge_management([dissolveClass,restPoints],wholeClass)
+        arcpy.Merge_management([mergeClass,restPoints],wholeClass)
 
         wholeClassProj=fileFolder +"\\"+ outputDatabase+"\\wholeclassesProjected"
         proCS=arcpy.SpatialReference(4269) #NAD83
@@ -207,7 +210,7 @@ def main():
         arcpy.env.extent = elevRaster.extent
         arcpy.env.outputCoordinateSystem = "PROJCS['NAD_1983_Albers',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Albers'],PARAMETER['false_easting',0.0],PARAMETER['false_northing',0.0],PARAMETER['central_meridian',-96.0],PARAMETER['standard_parallel_1',29.5],PARAMETER['standard_parallel_2',45.5],PARAMETER['latitude_of_origin',23.0],UNIT['Meter',1.0]]"
         arcpy.env.geographicTransformations = ""
-        arcpy.PointToRaster_conversion(wholeClassProj, "cls_lbl", rasterFinal, "MOST_FREQUENT", "NONE", "30")
+        arcpy.PointToRaster_conversion(wholeClassProj, "cls_lbl", rasterFinal, "SUM", "NONE", "30")
 
         finalfile = arcpy.Raster(rasterFinal)
         finalfile.save(savePath)

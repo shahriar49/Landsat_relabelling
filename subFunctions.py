@@ -1,6 +1,6 @@
 import os
 import arcpy
-import shutil
+import sys
 
 def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase,verbose):
 
@@ -146,7 +146,7 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
 
         # Process: Calculate Field
         arcpy.CalculateField_management(outputPerClass, "cls_lbl", codetoClass[code], "VB", "")
-        arcpy.AddGeometryAttributes_management(outputPerClass, "POINT_X_Y_Z_M")
+        #arcpy.AddGeometryAttributes_management(outputPerClass, "POINT_X_Y_Z_M")
 
         if verbose:
             print "Add and calculate field is done"
@@ -229,6 +229,10 @@ def makeExcelFile(WIP, inFolder, original_raster, corrected):
             #print 'converted from class %d :' % c
             for row in rows:
                 #print '   new class %d, count %d' % (row[0], row[1])
-                cursor.insertRow((c, Original_classes[c], row[0], New_classes[row[0]], row[1]))
+                try:
+                    cursor.insertRow((c, Original_classes[c], row[0], New_classes[row[0]], row[1]))
+                except:
+                    print('Error in Excel file generation. Probably you have pixels assigned more than once.')
+                    sys.exit()
 
     arcpy.TableToExcel_conversion(table, excel_table)
