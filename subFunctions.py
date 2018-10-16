@@ -146,6 +146,7 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
 
         # Process: Calculate Field
         arcpy.CalculateField_management(outputPerClass, "cls_lbl", codetoClass[code], "VB", "")
+        arcpy.AddGeometryAttributes_management(outputPerClass, "POINT_X_Y_Z_M")
 
         if verbose:
             print "Add and calculate field is done"

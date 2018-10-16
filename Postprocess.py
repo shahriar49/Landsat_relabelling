@@ -158,6 +158,9 @@ def main():
             perClasses.append(fileFolder +"\\"+ outputDatabase+"\\"+fc)
         mergeClass=fileFolder +"\\"+ outputDatabase+"\\mergeclass"
         arcpy.Merge_management(perClasses,mergeClass)
+        dissolveClass=fileFolder +"\\"+ outputDatabase+"\\dissolveclass"
+        arcpy.Dissolve_management(mergeClass, dissolveClass, "POINT_X;POINT_Y", [["cls_lbl", "SUM"]], "SINGLE_PART")
+        arcpy.AlterField_management(dissolveClass, "SUM_cls_lbl","cls_lbl")
 
         arcpy.env.workspace = tempWS
         print "Merge single classes is done."
@@ -183,7 +186,7 @@ def main():
         arcpy.CopyFeatures_management(rasterCopy_ly, restPoints, "", "0", "0", "0")
 
         wholeClass=fileFolder +"\\"+ outputDatabase+"\\wholeclasses"
-        arcpy.Merge_management([mergeClass,restPoints],wholeClass)
+        arcpy.Merge_management([dissolveClass,restPoints],wholeClass)
 
         wholeClassProj=fileFolder +"\\"+ outputDatabase+"\\wholeclassesProjected"
         proCS=arcpy.SpatialReference(4269) #NAD83
