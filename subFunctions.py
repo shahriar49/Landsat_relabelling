@@ -113,6 +113,7 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
         # merge
         outputPerClass=perClass+"\\"+tempDatabase+"\\outputPerclass"
         arcpy.Merge_management([outputRemove,outputAdd],outputPerClass)
+        arcpy.DeleteIdentical_management(outputPerClass, "Shape")
         isOutput=1
         if verbose:
             print "merge add and remove is done"
@@ -129,10 +130,11 @@ def getPerClassFunc(fileFolder,grid,codetoClass,code,rasterPoints,outputDatabase
         outputPerClass=outputmerge
         isOutput=1
         
-    if kmlNumber>0 and  addNumber>0  and removeNumber==0:
+    if kmlNumber>0 and  addNumber>0 and removeNumber==0:
         # merge
-        outputPerClass=perClass+"\\"+tempDatabase+"\\outputPerclass"
+        outputPerClass = perClass + "\\" + tempDatabase + "\\outputPerclass"
         arcpy.Merge_management([outputmerge,outputAdd],outputPerClass)
+        arcpy.DeleteIdentical_management(outputPerClass, "Shape")
         isOutput=1
 
     if addNumber==0 and  removeNumber==0 and kmlNumber>0:
