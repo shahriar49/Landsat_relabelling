@@ -103,7 +103,7 @@ def main():
 
     listRaster=os.listdir(raster)
     for file in listRaster:
-        if os.path.splitext(file)[1]==".img":
+        if os.path.splitext(file)[1] in {'.img', '.IMG'}:
             inputRaster=raster+"\\"+file
             #print inputRaster
             rasterPoints=fileFolder +"\\"+rasterDatabase+"\\"+"points"
