@@ -34,12 +34,10 @@ def main():
     if os.path.exists('WIP'):
         os.system('rmdir WIP /S /Q')
     os.system('mkdir WIP')
-    os.system('xcopy '+project_dir+'\\Empty_folders WIP /T /E')
+    os.system('xcopy "'+project_dir+'\\Empty_folders" WIP /T /E')
     os.chdir(tempFolder)
     #
     block_id = ''
-    pastYear = ''
-    currentYear = ''
 
     # Then, distribute files in KML_out folder to KML_gridxx folders
     for root, dirs, files in os.walk(inFolder+"KML_Out"):
@@ -51,23 +49,27 @@ def main():
             i2 = filename.find("group")
             i3 = filename.find("AddClass")
             i4 = filename.find("RemoveClass")
-            # i5 = filename.find("CurrentYear")
-            # i6 = filename.find("PastYear")
-            i7 = filename.find(".kmz")
-            if i7 != -1:        # looking at .kmz files only
+            i5 = filename.find("Year")
+            i6 = filename.find(".kmz")
+            if i6 != -1:        # looking at .kmz files only
                 if i1 != -1:
                     block_id = filename[0:11]
                     label = filename[i1+4:i2-1]
                     destination = "KML_grid"+label+"\\KMLs"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i3 != -1:
-                    label = filename[i3+8:i7]
+                    block_id = filename[0:11]
+                    label = filename[i3+8:i6]
                     destination = "KML_grid"+label+"\\AddPolygon"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i4 != -1:
-                    label = filename[i4+11:i7]
+                    label = filename[i4+11:i6]
                     destination = "KML_grid"+label+"\\RemovePolygon"
                     shutil.copy(root + "\\" + filename, destination)
+                elif i5 != -1:
+                    destination = "KML_Years\\"+filename[12:]
+                    shutil.copy(root + "\\" + filename, destination)
+
 
     # copy original image file into USGS_data folder
     copy_tree(inFolder+"USGS_data", "USGS_ref")
@@ -78,7 +80,7 @@ def main():
         os.system('del "'+inFolder+'ESF_Ref" /Q')
 
     finalResult = block_id + "_lc_ESFRef_30m"
-    savePath = inFolder+"ESF_Ref\\"+finalResult+".tif"
+    savePath = inFolder+"ESF_Ref\\"
 
     ###################################################
     ## Post-processing
@@ -207,9 +209,49 @@ def main():
     arcpy.PointToRaster_conversion(wholeClassProj, "cls_lbl", rasterFinal, "SUM", "NONE", "30")
 
     finalfile = arcpy.Raster(rasterFinal)
-    finalfile.save(savePath)
+    finalfile.save(savePath+finalResult+".tif")
 
     print "Final raster file is created."
+
+    ## Process first/last year files
+
+    # Load and convert FirstYear and LastYear KML files to layers
+    print " - Processing yearly KML files"
+    arcpy.env.workspace = fileFolder+"\\KML_Years"
+    FirstKML = fileFolder+'\\KML_Years\\FirstYear.kmz'
+    arcpy.KMLToLayer_conversion(FirstKML, '', "FirstYear", "NO_GROUNDOVERLAY")  ##
+    LastKML = fileFolder+'\\KML_Years\\LastYear.kmz'
+    arcpy.KMLToLayer_conversion(LastKML, '', "LastYear", "NO_GROUNDOVERLAY")  ##
+
+    # Year property is of string type when read into arcpy, so we add a new numeric field
+    # and copy the string value to a integer type
+    arcpy.AddField_management('FirstYear\Polygons', 'Year', 'LONG')
+    arcpy.AddField_management('LastYear\Polygons', 'Year', 'LONG')
+    arcpy.CalculateField_management('FirstYear\Polygons', 'YEAR', 'int(!NAME!)', "PYTHON")
+    arcpy.CalculateField_management('LastYear\Polygons', 'YEAR', 'int(!NAME!)', "PYTHON")
+
+    print " - Converting yearly polygons to point"
+    # Intersect final point features (calculated previously) with first and last year polygons to absorb their value
+    # as a new attribute to the point layer and save it to new feature classes (Points2 and Points3)
+    #arcpy.RasterToPoint_conversion('samp01_0113_ESFRef.tif', 'Points1', 'Value')
+    Points2 = fileFolder +"\\"+ outputDatabase+"\\Points2"
+    Points3 = fileFolder +"\\"+ outputDatabase+"\\Points3"
+    arcpy.Intersect_analysis([wholeClassProj, 'FirstYear\Polygons'], Points2)
+    arcpy.Intersect_analysis([wholeClassProj, 'LastYear\Polygons'], Points3)
+
+    # Convert Points2 and Points3 to raster, keeping their year values in conversion
+    print " - Converting points to rasters and making composite"
+    arcpy.PointToRaster_conversion(Points2, 'YEAR', 'Band2.tif')
+    arcpy.PointToRaster_conversion(Points3, 'YEAR', 'Band3.tif')
+
+    # combine two new rasters with the original one to create a 3-band raster
+    rasterFinal_3band = rasterFinal+"_3band"
+    arcpy.CompositeBands_management(rasterFinal+';Band2.tif;Band3.tif', rasterFinal_3band)
+    finalfile = arcpy.Raster(rasterFinal_3band)
+    finalfile.save(savePath+finalResult+"_3band.tif")
+
+    print "Year validity data added to a new raster as additional bands."
+
     print "* Postprocess is complete for file " + finalResult + "."
 
 if __name__ == "__main__":
