@@ -40,6 +40,9 @@ def main():
     block_id = ''
 
     # Then, distribute files in KML_out folder to KML_gridxx folders
+    if not os.path.exists(inFolder+"KML_Out"):
+        print('KML_Out folder does not exist!')
+        sys.exit()
     for root, dirs, files in os.walk(inFolder+"KML_Out"):
         if not files: # if directory is empty
             print('KML_Out folder is empty!')
@@ -49,9 +52,10 @@ def main():
             i2 = filename.find("group")
             i3 = filename.find("AddClass")
             i4 = filename.find("RemoveClass")
-            i5 = filename.find("Year")
-            i6 = filename.find(".kmz")
-            if i6 != -1:        # looking at .kmz files only
+            i5 = filename.find("FirstYear")
+            i6 = filename.find("LastYear")
+            i7 = filename.find(".kmz")
+            if i7 != -1:        # looking at .kmz files only
                 if i1 != -1:
                     block_id = filename[0:11]
                     label = filename[i1+4:i2-1]
@@ -59,15 +63,18 @@ def main():
                     shutil.copy(root + "\\" + filename, destination)
                 elif i3 != -1:
                     block_id = filename[0:11]
-                    label = filename[i3+8:i6]
+                    label = filename[i3+8:i7]
                     destination = "KML_grid"+label+"\\AddPolygon"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i4 != -1:
-                    label = filename[i4+11:i6]
+                    label = filename[i4+11:i7]
                     destination = "KML_grid"+label+"\\RemovePolygon"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i5 != -1:
-                    destination = "KML_Years\\"+filename[12:]
+                    destination = "KML_Years\\"+filename[15:]
+                    shutil.copy(root + "\\" + filename, destination)
+                elif i6 != -1:
+                    destination = "KML_Years\\"+filename[16:]
                     shutil.copy(root + "\\" + filename, destination)
 
 
