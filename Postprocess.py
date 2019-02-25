@@ -71,10 +71,10 @@ def main():
                     destination = "KML_grid"+label+"\\RemovePolygon"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i5 != -1:
-                    destination = "KML_Years\\"+filename[15:]
+                    destination = "KML_Years\\"+filename[i5:]
                     shutil.copy(root + "\\" + filename, destination)
                 elif i6 != -1:
-                    destination = "KML_Years\\"+filename[16:]
+                    destination = "KML_Years\\"+filename[i6:]
                     shutil.copy(root + "\\" + filename, destination)
 
 
