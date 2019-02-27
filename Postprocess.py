@@ -38,6 +38,7 @@ def main():
     os.chdir(tempFolder)
     #
     block_id = ''
+    year_flag = 1
 
     # Then, distribute files in KML_out folder to KML_gridxx folders
     if not os.path.exists(inFolder+"KML_Out"):
@@ -57,12 +58,12 @@ def main():
             i7 = filename.find(".kmz")
             if i7 != -1:        # looking at .kmz files only
                 if i1 != -1:
-                    block_id = filename[0:11]
+                    block_id = filename[0:11].lower()
                     label = filename[i1+4:i2-1]
                     destination = "KML_grid"+label+"\\KMLs"
                     shutil.copy(root + "\\" + filename, destination)
                 elif i3 != -1:
-                    block_id = filename[0:11]
+                    block_id = filename[0:11].lower()
                     label = filename[i3+8:i7]
                     destination = "KML_grid"+label+"\\AddPolygon"
                     shutil.copy(root + "\\" + filename, destination)
@@ -73,10 +74,15 @@ def main():
                 elif i5 != -1:
                     destination = "KML_Years\\"+filename[i5:]
                     shutil.copy(root + "\\" + filename, destination)
+                    year_flag = year_flag*2
                 elif i6 != -1:
                     destination = "KML_Years\\"+filename[i6:]
                     shutil.copy(root + "\\" + filename, destination)
+                    year_flag = year_flag*2
 
+    if (year_flag != 4):
+        print('FirstYear or LastYear KML file missing!')
+        sys.exit()
 
     # copy original image file into USGS_data folder
     copy_tree(inFolder+"USGS_data", "USGS_ref")
@@ -111,15 +117,17 @@ def main():
     rasterPts=fileFolder +"\\"+rasterDatabase+"\\"+"points"
 
     listRaster=os.listdir(raster)
+    if not listRaster:  # if directory is empty
+        print('USGS_Ref folder is empty!')
+        sys.exit()
     for file in listRaster:
-        if os.path.splitext(file)[1] in {'.img', '.IMG'}:
+        if os.path.splitext(file)[1] in {'.img', '.IMG', '.tif', '.TIF'}:
             inputRaster=raster+"\\"+file
             #print inputRaster
             rasterPoints=fileFolder +"\\"+rasterDatabase+"\\"+"points"
             if not arcpy.Exists(rasterPoints):
                 arcpy.RasterToPoint_conversion(inputRaster, rasterPoints, "Value")
                 print "Raster to points is done."
-
 
     # Process: Project
     rasterPointsPrj=fileFolder +"\\"+rasterDatabase+"\\"+"pointsProjectWGS84"
